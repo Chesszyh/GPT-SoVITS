@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpt-sovits-cli"
+version = "0.1.0"
+description = "CLI-first workflow for this GPT-SoVITS fork"
+requires-python = ">=3.10,<3.13"
+
+[project.scripts]
+gsv = "gsv_cli.app:console_main"
+gpt-sovits = "gsv_cli.app:console_main"
