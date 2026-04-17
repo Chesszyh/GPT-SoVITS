@@ -5,8 +5,11 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+import yaml
+
 from . import __version__
 from .config import GsvConfig, load_config, write_config
+from .infer import build_tts_inputs, make_tts_config, synthesize_to_file
 from .prep import run_asr, run_feature_commands, run_slice
 from .separate import AudioSeparatorMissing, run_separation
 from .train import run_gpt_training, run_sovits_training
@@ -78,8 +81,30 @@ def build_parser() -> argparse.ArgumentParser:
     train_gpt.add_argument("--epochs", type=int)
     train_sub.add_parser("all", parents=[train_common])
 
-    subparsers.add_parser("infer", help="Synthesize audio")
+    infer = subparsers.add_parser("infer", help="Synthesize audio")
+    infer.add_argument("-c", "--config", default="gsv.yaml", help="Project config path")
+    infer.add_argument("--text", help="Text to synthesize")
+    infer.add_argument("--text-file", help="UTF-8 file containing text to synthesize")
+    infer.add_argument("--ref", dest="ref_audio", help="Reference audio path")
+    infer.add_argument("--ref-text", help="Reference audio transcript")
+    infer.add_argument("--ref-text-file", help="UTF-8 file containing reference transcript")
+    infer.add_argument("--text-language", help="Text language: zh, en, or ja")
+    infer.add_argument("--ref-language", help="Reference text language: zh, en, or ja")
+    infer.add_argument("--out", required=True, help="Output wav path")
+    infer.add_argument("--device", default="cpu", help="Inference device, e.g. cpu, cuda, or mps")
+    infer.add_argument("--half", action="store_true", help="Use half precision when the device supports it")
+    infer.add_argument("--dry-run", action="store_true", help="Print resolved TTS config and inputs")
     return parser
+
+
+def _read_text_value(value: str | None, file_path: str | None, label: str) -> str:
+    if value and file_path:
+        raise ValueError(f"Use either --{label} or --{label}-file, not both")
+    if file_path:
+        return Path(file_path).read_text(encoding="utf-8").strip()
+    if value:
+        return value
+    raise ValueError(f"Missing required --{label} or --{label}-file")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -186,6 +211,38 @@ def main(argv: Sequence[str] | None = None) -> int:
             run_sovits_training(cfg, dry_run=args.dry_run)
             run_gpt_training(cfg, dry_run=args.dry_run)
             return 0
+    if args.command == "infer":
+        cfg = load_config(args.config)
+        text = _read_text_value(args.text, args.text_file, "text")
+        ref_text = _read_text_value(args.ref_text, args.ref_text_file, "ref-text")
+        ref_audio = args.ref_audio or cfg.infer.ref_audio
+        if not ref_audio:
+            raise ValueError("Missing required --ref or infer.ref_audio in config")
+        text_language = args.text_language or cfg.infer.text_language
+        ref_language = args.ref_language or cfg.infer.ref_language
+        tts_config = make_tts_config(cfg, device=args.device, is_half=args.half)
+        tts_inputs = build_tts_inputs(
+            text=text,
+            text_language=text_language,
+            ref_audio=ref_audio,
+            ref_text=ref_text,
+            ref_language=ref_language,
+        )
+        if args.dry_run:
+            print(yaml.safe_dump({"tts_config": tts_config, "inputs": tts_inputs}, allow_unicode=True, sort_keys=False))
+            return 0
+        synthesize_to_file(
+            cfg=cfg,
+            text=text,
+            ref_audio=ref_audio,
+            ref_text=ref_text,
+            output_path=args.out,
+            text_language=text_language,
+            ref_language=ref_language,
+            device=args.device,
+            is_half=args.half,
+        )
+        return 0
     print(f"Command '{args.command}' is not implemented yet")
     return 2
 
