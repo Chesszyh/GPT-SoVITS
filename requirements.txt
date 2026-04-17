@@ -9,13 +9,11 @@ ffmpeg-python
 onnxruntime; platform_machine == "aarch64" or platform_machine == "arm64"
 onnxruntime-gpu; platform_machine == "x86_64" or platform_machine == "AMD64"
 tqdm
-funasr==1.0.27
 cn2an
 pypinyin
 pyopenjtalk>=0.4.1
 g2p_en
 torchaudio
-modelscope
 sentencepiece
 transformers>=4.43,<=4.50
 peft<0.18.0
@@ -28,11 +26,7 @@ split-lang
 fast_langdetect>=0.3.1
 wordsegment
 rotary_embedding_torch
-ToJyutping 
-g2pk2
-ko_pron
 opencc
-python_mecab_ko; sys_platform != 'win32'
 x_transformers
 torchmetrics<=1.5
 pydantic<=2.10.6

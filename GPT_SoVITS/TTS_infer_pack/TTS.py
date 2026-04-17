@@ -31,7 +31,6 @@ from process_ckpt import get_sovits_version_from_path_fast, load_sovits_new
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
 from tools.audio_sr import AP_BWE
-from tools.i18n.i18n import I18nAuto, scan_language_list
 from TTS_infer_pack.text_segmentation_method import splits
 from TTS_infer_pack.TextPreprocessor import TextPreprocessor
 from sv import SV
@@ -47,9 +46,11 @@ def resample(audio_tensor, sr0, sr1, device):
     return resample_transform_dict[key](audio_tensor)
 
 
-language = os.environ.get("language", "Auto")
-language = sys.argv[-1] if sys.argv[-1] in scan_language_list() else language
-i18n = I18nAuto(language=language)
+SUPPORTED_TTS_LANGUAGES = ("zh", "en", "ja", "auto", "all_zh", "all_ja")
+
+
+def i18n(message: str) -> str:
+    return message
 
 
 spec_min = -12
@@ -273,7 +274,7 @@ class TTS_Config:
     }
     configs: dict = None
     v1_languages: list = ["auto", "en", "zh", "ja", "all_zh", "all_ja"]
-    v2_languages: list = ["auto", "auto_yue", "en", "zh", "ja", "yue", "ko", "all_zh", "all_ja", "all_yue", "all_ko"]
+    v2_languages: list = ["auto", "en", "zh", "ja", "all_zh", "all_ja"]
     languages: list = v2_languages
     mute_tokens: dict = {
         "v1" : 486,
@@ -287,14 +288,9 @@ class TTS_Config:
     # "all_zh",#全部按中文识别
     # "en",#全部按英文识别#######不变
     # "all_ja",#全部按日文识别
-    # "all_yue",#全部按中文识别
-    # "all_ko",#全部按韩文识别
     # "zh",#按中英混合识别####不变
     # "ja",#按日英混合识别####不变
-    # "yue",#按粤英混合识别####不变
-    # "ko",#按韩英混合识别####不变
     # "auto",#多语种启动切分识别语种
-    # "auto_yue",#多语种启动切分识别语种
 
     def __init__(self, configs: Union[dict, str] = None):
         # 设置默认配置文件路径

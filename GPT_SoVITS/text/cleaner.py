@@ -26,11 +26,11 @@ def clean_text(text, language, version=None):
         language_module_map = {"zh": "chinese", "ja": "japanese", "en": "english"}
     else:
         symbols = symbols_v2.symbols
-        language_module_map = {"zh": "chinese2", "ja": "japanese", "en": "english", "ko": "korean", "yue": "cantonese"}
+        language_module_map = {"zh": "chinese2", "ja": "japanese", "en": "english"}
 
     if language not in language_module_map:
-        language = "en"
-        text = " "
+        supported = ", ".join(language_module_map)
+        raise ValueError(f"Unsupported language '{language}'. Supported languages: {supported}")
     for special_s, special_l, target_symbol in special:
         if special_s in text and language == special_l:
             return clean_special(text, language, special_s, target_symbol, version)
@@ -39,7 +39,7 @@ def clean_text(text, language, version=None):
         norm_text = language_module.text_normalize(text)
     else:
         norm_text = text
-    if language == "zh" or language == "yue":  ##########
+    if language == "zh":
         phones, word2ph = language_module.g2p(norm_text)
         assert len(phones) == sum(word2ph)
         assert len(norm_text) == len(word2ph)
@@ -63,11 +63,14 @@ def clean_special(text, language, special_s, target_symbol, version=None):
         language_module_map = {"zh": "chinese", "ja": "japanese", "en": "english"}
     else:
         symbols = symbols_v2.symbols
-        language_module_map = {"zh": "chinese2", "ja": "japanese", "en": "english", "ko": "korean", "yue": "cantonese"}
+        language_module_map = {"zh": "chinese2", "ja": "japanese", "en": "english"}
 
     """
     特殊静音段sp符号处理
     """
+    if language not in language_module_map:
+        supported = ", ".join(language_module_map)
+        raise ValueError(f"Unsupported language '{language}'. Supported languages: {supported}")
     text = text.replace(special_s, ",")
     language_module = __import__("text." + language_module_map[language], fromlist=[language_module_map[language]])
     norm_text = language_module.text_normalize(text)

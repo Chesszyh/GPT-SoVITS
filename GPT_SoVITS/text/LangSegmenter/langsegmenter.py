@@ -45,12 +45,8 @@ def full_cjk(text):
     return cjk_text
 
 
-def split_jako(tag_lang,item):
-    if tag_lang == "ja":
-        pattern = r"([\u3041-\u3096\u3099\u309A\u30A1-\u30FA\u30FC]+(?:[0-9、-〜。！？.!?… ]+[\u3041-\u3096\u3099\u309A\u30A1-\u30FA\u30FC]*)*)"
-    else:
-        pattern = r"([\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]+(?:[0-9、-〜。！？.!?… ]+[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]*)*)"
-
+def split_ja(item):
+    pattern = r"([\u3041-\u3096\u3099\u309A\u30A1-\u30FA\u30FC]+(?:[0-9、-〜。！？.!?… ]+[\u3041-\u3096\u3099\u309A\u30A1-\u30FA\u30FC]*)*)"
     lang_list: list[dict] = []
     tag = 0
     for match in re.finditer(pattern, item['text']):
@@ -58,7 +54,7 @@ def split_jako(tag_lang,item):
             lang_list.append({'lang':item['lang'],'text':item['text'][tag:match.start()]})
 
         tag = match.end()
-        lang_list.append({'lang':tag_lang,'text':item['text'][match.start():match.end()]})
+        lang_list.append({'lang':'ja','text':item['text'][match.start():match.end()]})
 
     if tag < len(item['text']):
         lang_list.append({'lang':item['lang'],'text':item['text'][tag:len(item['text'])]})
@@ -75,14 +71,12 @@ def merge_lang(lang_list, item):
 
 
 class LangSegmenter():
-    # 默认过滤器, 基于gsv目前四种语言
+    # 默认过滤器, 基于 CLI 路径保留 zh/en/ja。
     DEFAULT_LANG_MAP = {
         "zh": "zh",
-        "yue": "zh",  # 粤语
         "wuu": "zh",  # 吴语
         "zh-cn": "zh",
         "zh-tw": "x", # 繁体设置为x
-        "ko": "ko",
         "ja": "ja",
         "en": "en",
     }
@@ -121,25 +115,13 @@ class LangSegmenter():
                 # 处理非日语夹日文的问题(不包含CJK)
                 ja_list: list[dict] = []
                 if dict_item['lang'] != 'ja':
-                    ja_list = split_jako('ja',dict_item)
+                    ja_list = split_ja(dict_item)
 
                 if not ja_list:
                     ja_list.append(dict_item)
 
-                # 处理非韩语夹韩语的问题(不包含CJK)
-                ko_list: list[dict] = []
-                temp_list: list[dict] = []
-                for _, ko_item in enumerate(ja_list):
-                    if ko_item["lang"] != 'ko':
-                        ko_list = split_jako('ko',ko_item)
-
-                    if ko_list:
-                        temp_list.extend(ko_list)
-                    else:
-                        temp_list.append(ko_item)
-
-                # 未存在非日韩文夹日韩文
-                if len(temp_list) == 1:
+                # 未存在非日文夹日文
+                if len(ja_list) == 1:
                     # 未知语言检查是否为CJK
                     if dict_item['lang'] == 'x':
                         cjk_text = full_cjk(dict_item['text'])
@@ -153,8 +135,8 @@ class LangSegmenter():
                         lang_list = merge_lang(lang_list,dict_item)
                         continue
 
-                # 存在非日韩文夹日韩文
-                for _, temp_item in enumerate(temp_list):
+                # 存在非日文夹日文
+                for _, temp_item in enumerate(ja_list):
                     # 未知语言检查是否为CJK
                     if temp_item['lang'] == 'x':
                         cjk_text = full_cjk(temp_item['text'])

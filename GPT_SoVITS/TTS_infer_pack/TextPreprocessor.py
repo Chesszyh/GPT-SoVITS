@@ -17,11 +17,14 @@ from text import cleaned_text_to_sequence
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from TTS_infer_pack.text_segmentation_method import split_big_text, splits, get_method as get_seg_method
 
-from tools.i18n.i18n import I18nAuto, scan_language_list
 
-language = os.environ.get("language", "Auto")
-language = sys.argv[-1] if sys.argv[-1] in scan_language_list() else language
-i18n = I18nAuto(language=language)
+SUPPORTED_FRONTEND_LANGUAGES = {"zh", "en", "ja"}
+
+
+def i18n(message: str) -> str:
+    return message
+
+
 punctuation = set(["!", "?", "…", ",", ".", "-"])
 
 
@@ -128,18 +131,8 @@ class TextPreprocessor:
                 for tmp in LangSegmenter.getTexts(text,"zh"):
                     langlist.append(tmp["lang"])
                     textlist.append(tmp["text"])
-            elif language == "all_yue":
-                for tmp in LangSegmenter.getTexts(text,"zh"):
-                    if tmp["lang"] == "zh":
-                        tmp["lang"] = "yue"
-                    langlist.append(tmp["lang"])
-                    textlist.append(tmp["text"])
             elif language == "all_ja":
                 for tmp in LangSegmenter.getTexts(text,"ja"):
-                    langlist.append(tmp["lang"])
-                    textlist.append(tmp["text"])
-            elif language == "all_ko":
-                for tmp in LangSegmenter.getTexts(text,"ko"):
                     langlist.append(tmp["lang"])
                     textlist.append(tmp["text"])
             elif language == "en":
@@ -147,15 +140,12 @@ class TextPreprocessor:
                 textlist.append(text)
             elif language == "auto":
                 for tmp in LangSegmenter.getTexts(text):
-                    langlist.append(tmp["lang"])
-                    textlist.append(tmp["text"])
-            elif language == "auto_yue":
-                for tmp in LangSegmenter.getTexts(text):
-                    if tmp["lang"] == "zh":
-                        tmp["lang"] = "yue"
-                    langlist.append(tmp["lang"])
+                    langlist.append(tmp["lang"] if tmp["lang"] in SUPPORTED_FRONTEND_LANGUAGES else "en")
                     textlist.append(tmp["text"])
             else:
+                if language not in SUPPORTED_FRONTEND_LANGUAGES:
+                    supported = ", ".join(sorted(SUPPORTED_FRONTEND_LANGUAGES))
+                    raise ValueError(f"Unsupported language '{language}'. Supported languages: {supported}")
                 for tmp in LangSegmenter.getTexts(text):
                     if langlist:
                         if (tmp["lang"] == "en" and langlist[-1] == "en") or (tmp["lang"] != "en" and langlist[-1] != "en"):
