@@ -6,12 +6,14 @@ import sys
 import time
 import traceback
 from copy import deepcopy
+from pathlib import Path
 
 import torchaudio
 from tqdm import tqdm
 
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+now_dir = str(Path(__file__).resolve().parents[1])
+if now_dir not in sys.path:
+    sys.path.insert(0, now_dir)
 import os
 from typing import List, Tuple, Union
 
@@ -27,7 +29,7 @@ from feature_extractor.cnhubert import CNHubert
 from module.mel_processing import mel_spectrogram_torch, spectrogram_torch
 from module.models import SynthesizerTrn, SynthesizerTrnV3, Generator
 from peft import LoraConfig, get_peft_model
-from process_ckpt import get_sovits_version_from_path_fast, load_sovits_new
+from GPT_SoVITS.process_ckpt import get_sovits_version_from_path_fast, load_sovits_new
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
 from tools.audio_sr import AP_BWE
