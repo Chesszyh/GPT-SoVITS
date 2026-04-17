@@ -6,6 +6,7 @@ from typing import Sequence
 
 from . import __version__
 from .config import GsvConfig, write_config
+from .versions import get_version
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,6 +46,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_help()
         return 0
     if args.command == "init":
+        get_version(args.version)
         cfg = GsvConfig.default(Path(args.name).name).with_overrides({"version": args.version})
         config_path = Path(args.config) if args.config else Path(args.name) / "gsv.yaml"
         write_config(config_path, cfg)

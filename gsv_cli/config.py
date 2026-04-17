@@ -6,6 +6,8 @@ from typing import Any
 
 import yaml
 
+from .versions import get_version, validate_language
+
 
 @dataclass(frozen=True)
 class ProjectConfig:
@@ -93,16 +95,23 @@ class GsvConfig:
 
 
 def _from_dict(data: dict[str, Any]) -> GsvConfig:
+    version = data.get("version", "v2ProPlus")
+    language = data.get("language", "zh")
+    get_version(version)
+    validate_language(language)
+    infer_data = data.get("infer", {})
+    validate_language(infer_data.get("ref_language", "zh"))
+    validate_language(infer_data.get("text_language", "zh"))
     return GsvConfig(
         project=ProjectConfig(**data["project"]),
-        version=data.get("version", "v2ProPlus"),
-        language=data.get("language", "zh"),
+        version=version,
+        language=language,
         speaker=data.get("speaker", data["project"]["name"]),
         paths=PathConfig(**data.get("paths", {})),
         asr=AsrConfig(**data.get("asr", {})),
         separation=SeparationConfig(**data.get("separation", {})),
         train=TrainConfig(**data.get("train", {})),
-        infer=InferConfig(**data.get("infer", {})),
+        infer=InferConfig(**infer_data),
     )
 
 
