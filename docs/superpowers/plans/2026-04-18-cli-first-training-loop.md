@@ -282,7 +282,7 @@ Create `gsv_cli/config.py` with dataclasses for `ProjectConfig`, `PathConfig`, `
 ```python
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -349,11 +349,11 @@ class GsvConfig:
     version: str = "v2ProPlus"
     language: str = "zh"
     speaker: str = "voice"
-    paths: PathConfig = PathConfig()
-    asr: AsrConfig = AsrConfig()
-    separation: SeparationConfig = SeparationConfig()
-    train: TrainConfig = TrainConfig()
-    infer: InferConfig = InferConfig()
+    paths: PathConfig = field(default_factory=PathConfig)
+    asr: AsrConfig = field(default_factory=AsrConfig)
+    separation: SeparationConfig = field(default_factory=SeparationConfig)
+    train: TrainConfig = field(default_factory=TrainConfig)
+    infer: InferConfig = field(default_factory=InferConfig)
 
     @classmethod
     def default(cls, project_name: str) -> "GsvConfig":
