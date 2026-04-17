@@ -50,7 +50,9 @@ run_pip_quiet() {
 run_wget_quiet() {
     if wget --tries=25 --wait=5 --read-timeout=40 -q --show-progress "$@" 2>&1; then
         if [ "$WORKFLOW" = "false" ]; then
-            tput cuu1 && tput el
+            if tput cuu1 >/dev/null 2>&1; then
+                tput el
+            fi
         fi
     else
         echo -e "${ERROR} Wget failed"
@@ -326,17 +328,17 @@ fi
 if [ "$USE_CUDA" = true ] && [ "$WORKFLOW" = false ]; then
     if [ "$CUDA" = 128 ]; then
         echo -e "${INFO}Installing PyTorch For CUDA 12.8..."
-        run_pip_quiet torch torchcodec --index-url "https://download.pytorch.org/whl/cu128"
+        run_pip_quiet torch torchaudio torchcodec --index-url "https://download.pytorch.org/whl/cu128"
     elif [ "$CUDA" = 126 ]; then
         echo -e "${INFO}Installing PyTorch For CUDA 12.6..."
-        run_pip_quiet torch torchcodec --index-url "https://download.pytorch.org/whl/cu126"
+        run_pip_quiet torch torchaudio torchcodec --index-url "https://download.pytorch.org/whl/cu126"
     fi
 elif [ "$USE_ROCM" = true ] && [ "$WORKFLOW" = false ]; then
     echo -e "${INFO}Installing PyTorch For ROCm 6.2..."
-    run_pip_quiet torch torchcodec --index-url "https://download.pytorch.org/whl/rocm6.2"
+    run_pip_quiet torch torchaudio torchcodec --index-url "https://download.pytorch.org/whl/rocm6.2"
 elif [ "$USE_CPU" = true ] && [ "$WORKFLOW" = false ]; then
     echo -e "${INFO}Installing PyTorch For CPU..."
-    run_pip_quiet torch torchcodec --index-url "https://download.pytorch.org/whl/cpu"
+    run_pip_quiet torch torchaudio torchcodec --index-url "https://download.pytorch.org/whl/cpu"
 elif [ "$WORKFLOW" = false ]; then
     echo -e "${ERROR}Unknown Err"
     exit 1
@@ -351,6 +353,8 @@ run_pip_quiet -r extra-req.txt --no-deps
 
 run_pip_quiet -r requirements.txt
 
+run_pip_quiet -e .
+
 echo -e "${SUCCESS}Python Dependencies Installed"
 
 PY_PREFIX=$(python -c "import sys; print(sys.prefix)")
@@ -359,7 +363,7 @@ PYOPENJTALK_PREFIX=$(python -c "import os, pyopenjtalk; print(os.path.dirname(py
 echo -e "${INFO}Downloading NLTK Data..."
 rm -rf nltk_data.zip
 run_wget_quiet "$NLTK_URL" -O nltk_data.zip
-unzip -q -o nltk_data -d "$PY_PREFIX"
+unzip -q -o nltk_data.zip -d "$PY_PREFIX"
 rm -rf nltk_data.zip
 echo -e "${SUCCESS}NLTK Data Downloaded"
 
