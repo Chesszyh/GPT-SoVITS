@@ -11,3 +11,6 @@ requires-python = ">=3.10,<3.13"
 [project.scripts]
 gsv = "gsv_cli.app:console_main"
 gpt-sovits = "gsv_cli.app:console_main"
+
+[tool.setuptools]
+packages = ["gsv_cli"]
