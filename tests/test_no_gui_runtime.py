@@ -14,6 +14,8 @@ class NoGuiRuntimeTests(unittest.TestCase):
             "GPT_SoVITS/inference_webui.py",
             "GPT_SoVITS/inference_webui_fast.py",
             "GPT_SoVITS/inference_gui.py",
+            "api.py",
+            "api_v2.py",
             "tools/subfix_webui.py",
             "tools/uvr5",
         ]

@@ -72,19 +72,18 @@ WORKFLOW=${WORKFLOW:-"false"}
 
 USE_HF=false
 USE_HF_MIRROR=false
-USE_MODELSCOPE=false
 
 print_help() {
     echo "Usage: bash install.sh [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  --device   CU126|CU128|ROCM|MPS|CPU    Specify the Device (REQUIRED)"
-    echo "  --source   HF|HF-Mirror|ModelScope     Specify the model source (REQUIRED)"
+    echo "  --source   HF|HF-Mirror                Specify the model source (REQUIRED)"
     echo "  -h, --help                             Show this help message and exit"
     echo ""
     echo "Examples:"
     echo "  bash install.sh --device CU128 --source HF"
-    echo "  bash install.sh --device MPS --source ModelScope"
+    echo "  bash install.sh --device MPS --source HF-Mirror"
 }
 
 # Show help if no arguments provided
@@ -104,12 +103,9 @@ while [[ $# -gt 0 ]]; do
         HF-Mirror)
             USE_HF_MIRROR=true
             ;;
-        ModelScope)
-            USE_MODELSCOPE=true
-            ;;
         *)
             echo -e "${ERROR}Error: Invalid Download Source: $2"
-            echo -e "${ERROR}Choose From: [HF, HF-Mirror, ModelScope]"
+            echo -e "${ERROR}Choose From: [HF, HF-Mirror]"
             exit 1
             ;;
         esac
@@ -162,7 +158,7 @@ if ! $USE_CUDA && ! $USE_ROCM && ! $USE_CPU; then
     exit 1
 fi
 
-if ! $USE_HF && ! $USE_HF_MIRROR && ! $USE_MODELSCOPE; then
+if ! $USE_HF && ! $USE_HF_MIRROR; then
     echo -e "${ERROR}Error: Download Source is REQUIRED"
     echo ""
     print_help
@@ -239,12 +235,6 @@ elif [ "$USE_HF_MIRROR" = "true" ]; then
     G2PW_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/G2PWModel.zip"
     NLTK_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/nltk_data.zip"
     PYOPENJTALK_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/open_jtalk_dic_utf_8-1.11.tar.gz"
-elif [ "$USE_MODELSCOPE" = "true" ]; then
-    echo -e "${INFO}Download Model From ModelScope"
-    PRETRINED_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/pretrained_models.zip"
-    G2PW_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/G2PWModel.zip"
-    NLTK_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/nltk_data.zip"
-    PYOPENJTALK_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/open_jtalk_dic_utf_8-1.11.tar.gz"
 fi
 
 if [ ! -d "GPT_SoVITS/pretrained_models/sv" ]; then
