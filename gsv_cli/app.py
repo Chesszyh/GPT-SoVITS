@@ -9,6 +9,7 @@ from . import __version__
 from .config import GsvConfig, load_config, write_config
 from .prep import run_asr, run_feature_commands, run_slice
 from .separate import AudioSeparatorMissing, run_separation
+from .train import run_gpt_training, run_sovits_training
 from .versions import get_version
 
 
@@ -63,11 +64,19 @@ def build_parser() -> argparse.ArgumentParser:
     prep_sub.add_parser("features", parents=[prep_common])
     prep_sub.add_parser("all", parents=[prep_common])
 
+    train_common = argparse.ArgumentParser(add_help=False)
+    train_common.add_argument("-c", "--config", default="gsv.yaml", help="Project config path")
+    train_common.add_argument("--dry-run", action="store_true", help="Print commands without running them")
+
     train = subparsers.add_parser("train", help="Train GPT-SoVITS weights")
     train_sub = train.add_subparsers(dest="train_command")
-    train_sub.add_parser("sovits")
-    train_sub.add_parser("gpt")
-    train_sub.add_parser("all")
+    train_sovits = train_sub.add_parser("sovits", parents=[train_common])
+    train_sovits.add_argument("--batch-size", type=int)
+    train_sovits.add_argument("--epochs", type=int)
+    train_gpt = train_sub.add_parser("gpt", parents=[train_common])
+    train_gpt.add_argument("--batch-size", type=int)
+    train_gpt.add_argument("--epochs", type=int)
+    train_sub.add_parser("all", parents=[train_common])
 
     subparsers.add_parser("infer", help="Synthesize audio")
     return parser
@@ -154,6 +163,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                     dry_run=args.dry_run,
                 )
             run_feature_commands(cfg, dry_run=args.dry_run)
+            return 0
+    if args.command == "train":
+        cfg = load_config(args.config)
+        if args.train_command == "sovits":
+            overrides = {}
+            if args.batch_size is not None:
+                overrides["train.sovits_batch_size"] = args.batch_size
+            if args.epochs is not None:
+                overrides["train.sovits_epochs"] = args.epochs
+            run_sovits_training(cfg.with_overrides(overrides), dry_run=args.dry_run)
+            return 0
+        if args.train_command == "gpt":
+            overrides = {}
+            if args.batch_size is not None:
+                overrides["train.gpt_batch_size"] = args.batch_size
+            if args.epochs is not None:
+                overrides["train.gpt_epochs"] = args.epochs
+            run_gpt_training(cfg.with_overrides(overrides), dry_run=args.dry_run)
+            return 0
+        if args.train_command == "all":
+            run_sovits_training(cfg, dry_run=args.dry_run)
+            run_gpt_training(cfg, dry_run=args.dry_run)
             return 0
     print(f"Command '{args.command}' is not implemented yet")
     return 2
