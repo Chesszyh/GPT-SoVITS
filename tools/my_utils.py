@@ -4,13 +4,12 @@ import sys
 from pathlib import Path
 
 import ffmpeg
-import gradio as gr
 import numpy as np
 import pandas as pd
 
-from tools.i18n.i18n import I18nAuto
 
-i18n = I18nAuto(language=os.environ.get("language", "Auto"))
+def _warning(message: str) -> None:
+    print(f"[WARNING] {message}", file=sys.stderr)
 
 
 def load_audio(file, sr):
@@ -32,7 +31,7 @@ def load_audio(file, sr):
             .output("-", format="f32le", acodec="pcm_f32le", ac=1, ar=sr)
             .run(cmd=["ffmpeg", "-nostdin"], capture_stdout=True)
         )  # Expose the Error
-        raise RuntimeError(i18n("音频加载失败"))
+        raise RuntimeError("Audio loading failed")
 
     return np.frombuffer(out, np.float32).flatten()
 
@@ -65,24 +64,24 @@ def check_for_existance(file_list: list = None, is_train=False, is_dataset_proce
                 if status:
                     pass
                 else:
-                    gr.Warning(file)
-            gr.Warning(i18n("以下文件或文件夹不存在"))
+                    _warning(file)
+            _warning("The following file or directory does not exist")
             return False
         elif is_dataset_processing:
             if files_status[0]:
                 return True
             elif not files_status[0]:
-                gr.Warning(file_list[0])
+                _warning(file_list[0])
             elif not files_status[1] and file_list[1]:
-                gr.Warning(file_list[1])
-            gr.Warning(i18n("以下文件或文件夹不存在"))
+                _warning(file_list[1])
+            _warning("The following file or directory does not exist")
             return False
         else:
             if file_list[0]:
-                gr.Warning(file_list[0])
-                gr.Warning(i18n("以下文件或文件夹不存在"))
+                _warning(file_list[0])
+                _warning("The following file or directory does not exist")
             else:
-                gr.Warning(i18n("路径不能为空"))
+                _warning("Path cannot be empty")
             return False
     return True
 
@@ -91,11 +90,11 @@ def check_details(path_list=None, is_train=False, is_dataset_processing=False):
     if is_dataset_processing:
         list_path, audio_path = path_list
         if not list_path.endswith(".list"):
-            gr.Warning(i18n("请填入正确的List路径"))
+            _warning("Please provide a valid .list path")
             return
         if audio_path:
             if not os.path.isdir(audio_path):
-                gr.Warning(i18n("请填入正确的音频文件夹路径"))
+                _warning("Please provide a valid audio directory")
                 return
         with open(list_path, "r", encoding="utf8") as f:
             line = f.readline().strip("\n").split("\n")
@@ -109,7 +108,7 @@ def check_details(path_list=None, is_train=False, is_dataset_processing=False):
         if os.path.exists(wav_path):
             ...
         else:
-            gr.Warning(wav_path + i18n("路径错误"))
+            _warning(f"{wav_path} path error")
         return
     if is_train:
         path_list.append(os.path.join(path_list[0], "2-name2text.txt"))
@@ -121,20 +120,20 @@ def check_details(path_list=None, is_train=False, is_dataset_processing=False):
             if f.read(1):
                 ...
             else:
-                gr.Warning(i18n("缺少音素数据集"))
+                _warning("Missing phoneme dataset")
         if os.listdir(hubert_path):
             ...
         else:
-            gr.Warning(i18n("缺少Hubert数据集"))
+            _warning("Missing Hubert dataset")
         if os.listdir(wav_path):
             ...
         else:
-            gr.Warning(i18n("缺少音频数据集"))
+            _warning("Missing audio dataset")
         df = pd.read_csv(semantic_path, delimiter="\t", encoding="utf-8")
         if len(df) >= 1:
             ...
         else:
-            gr.Warning(i18n("缺少语义数据集"))
+            _warning("Missing semantic dataset")
 
 
 def load_cudnn():

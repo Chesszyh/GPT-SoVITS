@@ -73,7 +73,6 @@ WORKFLOW=${WORKFLOW:-"false"}
 USE_HF=false
 USE_HF_MIRROR=false
 USE_MODELSCOPE=false
-DOWNLOAD_UVR5=false
 
 print_help() {
     echo "Usage: bash install.sh [OPTIONS]"
@@ -81,11 +80,10 @@ print_help() {
     echo "Options:"
     echo "  --device   CU126|CU128|ROCM|MPS|CPU    Specify the Device (REQUIRED)"
     echo "  --source   HF|HF-Mirror|ModelScope     Specify the model source (REQUIRED)"
-    echo "  --download-uvr5                        Enable downloading the UVR5 model"
     echo "  -h, --help                             Show this help message and exit"
     echo ""
     echo "Examples:"
-    echo "  bash install.sh --device CU128 --source HF --download-uvr5"
+    echo "  bash install.sh --device CU128 --source HF"
     echo "  bash install.sh --device MPS --source ModelScope"
 }
 
@@ -143,10 +141,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         esac
         shift 2
-        ;;
-    --download-uvr5)
-        DOWNLOAD_UVR5=true
-        shift
         ;;
     -h | --help)
         print_help
@@ -237,21 +231,18 @@ if [ "$USE_HF" = "true" ]; then
     echo -e "${INFO}Download Model From HuggingFace"
     PRETRINED_URL="https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/pretrained_models.zip"
     G2PW_URL="https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/G2PWModel.zip"
-    UVR5_URL="https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/uvr5_weights.zip"
     NLTK_URL="https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/nltk_data.zip"
     PYOPENJTALK_URL="https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/open_jtalk_dic_utf_8-1.11.tar.gz"
 elif [ "$USE_HF_MIRROR" = "true" ]; then
     echo -e "${INFO}Download Model From HuggingFace-Mirror"
     PRETRINED_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/pretrained_models.zip"
     G2PW_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/G2PWModel.zip"
-    UVR5_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/uvr5_weights.zip"
     NLTK_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/nltk_data.zip"
     PYOPENJTALK_URL="https://hf-mirror.com/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/open_jtalk_dic_utf_8-1.11.tar.gz"
 elif [ "$USE_MODELSCOPE" = "true" ]; then
     echo -e "${INFO}Download Model From ModelScope"
     PRETRINED_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/pretrained_models.zip"
     G2PW_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/G2PWModel.zip"
-    UVR5_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/uvr5_weights.zip"
     NLTK_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/nltk_data.zip"
     PYOPENJTALK_URL="https://www.modelscope.cn/models/XXXXRT/GPT-SoVITS-Pretrained/resolve/master/open_jtalk_dic_utf_8-1.11.tar.gz"
 fi
@@ -280,21 +271,6 @@ if [ ! -d "GPT_SoVITS/text/G2PWModel" ]; then
 else
     echo -e "${INFO}G2PWModel Exists"
     echo -e "${INFO}Skip Downloading G2PWModel"
-fi
-
-if [ "$DOWNLOAD_UVR5" = "true" ]; then
-    if find -L "tools/uvr5/uvr5_weights" -mindepth 1 ! -name '.gitignore' | grep -q .; then
-        echo -e"${INFO}UVR5 Models Exists"
-        echo -e "${INFO}Skip Downloading UVR5 Models"
-    else
-        echo -e "${INFO}Downloading UVR5 Models..."
-        rm -rf uvr5_weights.zip
-        run_wget_quiet "$UVR5_URL"
-
-        unzip -q -o uvr5_weights.zip -d tools/uvr5
-        rm -rf uvr5_weights.zip
-        echo -e "${SUCCESS}UVR5 Models Downloaded"
-    fi
 fi
 
 if [ "$USE_CUDA" = true ] && [ "$WORKFLOW" = false ]; then
