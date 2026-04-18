@@ -27,9 +27,6 @@ from tools.my_utils import clean_path
 # i_part=sys.argv[4]
 # all_parts=sys.argv[5]
 # os.environ["CUDA_VISIBLE_DEVICES"]=sys.argv[6]#i_gpu
-# opt_dir="/data/docker/liujing04/gpt-vits/fine_tune_dataset/%s"%exp_name
-# bert_pretrained_dir="/data/docker/liujing04/bert-vits2/Bert-VITS2-master20231106/bert/chinese-roberta-wwm-ext-large"
-
 from time import time as ttime
 import shutil
 

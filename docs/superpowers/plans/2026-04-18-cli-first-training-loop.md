@@ -40,7 +40,7 @@ Modify:
 - `install.sh`: keep Linux/macOS installation working and install this repo editable.
 - `requirements.txt`: remove GUI/unsupported ASR dependencies after CLI verification.
 - `README.md`: replace broad beginner/WebUI instructions with concise CLI workflow.
-- `docs/cn/README.md` and `docs/ja/README.md`: either update to CLI workflow or remove if maintaining only root README.
+- `docs/zh/README.md` and `docs/ja/README.md`: either update to CLI workflow or remove if maintaining only root README.
 - Existing GPT-SoVITS scripts only where they must accept CLI-friendly arguments instead of WebUI environment coupling.
 
 Delete after CLI verification:

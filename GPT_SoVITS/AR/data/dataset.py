@@ -1,7 +1,6 @@
 # modified from https://github.com/yangdongchao/SoundStorm/blob/master/soundstorm/s1/AR/data/dataset.py
 # reference: https://github.com/lifeiteng/vall-e
 
-# sys.path.append("/data/docker/liujing04/gpt-vits/mq-vits-s1bert_no_bert")
 import os
 import traceback
 from typing import Dict, List
@@ -83,9 +82,6 @@ class Text2SemanticDataset(Dataset):
         # pad for semantic tokens
         self.PAD: int = pad_val
         # self.hz = 25
-        # with open("/data/docker/liujing04/gpt-vits/mq-vits-s1bert_no_bert/configs/s2.json", "r") as f:data = f.read()
-        # data=json.loads(data)["model"]["semantic_frame_rate"]#50hz
-        # self.hz=int(data[:-2])#
         self.hz = int(os.environ.get("hz", "25hz")[:-2])
 
         # max seconds of semantic token
@@ -109,8 +105,6 @@ class Text2SemanticDataset(Dataset):
             self.inited = True
             del self.semantic_data
             del self.phoneme_data
-        # self.tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext-large")
-        # self.tokenizer = AutoTokenizer.from_pretrained("/data/docker/liujing04/bert-vits2/Bert-VITS2-master20231106/bert/chinese-roberta-wwm-ext-large")
 
     def init_batch(self):
         semantic_data_len = len(self.semantic_data)
@@ -292,7 +286,7 @@ class Text2SemanticDataset(Dataset):
 
 
 if __name__ == "__main__":
-    root_dir = "/data/docker/liujing04/gpt-vits/prepare/dump_mix/"
+    root_dir = "prepare/dump_mix/"
     dataset = Text2SemanticDataset(
         phoneme_path=root_dir + "phoneme_train.npy",
         semantic_path=root_dir + "semantic_train.tsv",

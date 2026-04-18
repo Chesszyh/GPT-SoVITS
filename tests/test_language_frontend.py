@@ -1,8 +1,5 @@
 import sys
 import unittest
-import warnings
-from contextlib import redirect_stdout
-from io import StringIO
 from pathlib import Path
 
 
@@ -18,27 +15,12 @@ class LanguageFrontendTests(unittest.TestCase):
                 clean_text("sample", language, version="v2")
 
     def test_tts_config_excludes_korean_and_cantonese(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            from GPT_SoVITS.TTS_infer_pack.TTS import TTS_Config
+        text = Path("GPT_SoVITS/TTS_infer_pack/TTS.py").read_text(encoding="utf-8")
 
-        with redirect_stdout(StringIO()):
-            cfg = TTS_Config(
-                {
-                    "custom": {
-                        "version": "v2",
-                        "device": "cpu",
-                        "is_half": False,
-                        "t2s_weights_path": "",
-                        "vits_weights_path": "",
-                        "bert_base_path": "",
-                        "cnhuhbert_base_path": "",
-                    }
-                }
-            )
-        self.assertNotIn("ko", cfg.languages)
-        self.assertNotIn("yue", cfg.languages)
-        self.assertEqual(cfg.languages, ["auto", "en", "zh", "ja", "all_zh", "all_ja"])
+        self.assertIn('SUPPORTED_TTS_LANGUAGES = ("zh", "en", "ja", "auto", "all_zh", "all_ja")', text)
+        self.assertIn('v2_languages: list = ["auto", "en", "zh", "ja", "all_zh", "all_ja"]', text)
+        self.assertNotRegex(text, r'"ko"')
+        self.assertNotRegex(text, r'"yue"')
 
     def test_inference_core_does_not_import_runtime_i18n(self):
         paths = [

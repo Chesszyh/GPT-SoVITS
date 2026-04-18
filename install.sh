@@ -315,7 +315,7 @@ echo -e "${INFO}Installing Python Dependencies From requirements.txt..."
 
 hash -r
 
-run_pip_quiet -r extra-req.txt --no-deps
+run_pip_quiet -r requirements-extra.txt --no-deps
 
 run_pip_quiet -r requirements.txt
 

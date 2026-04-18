@@ -36,8 +36,6 @@ from tools.my_utils import load_audio, clean_path
 # all_parts=sys.argv[5]
 # os.environ["CUDA_VISIBLE_DEVICES"]=sys.argv[6]
 # cnhubert.cnhubert_base_path=sys.argv[7]
-# opt_dir="/data/docker/liujing04/gpt-vits/fine_tune_dataset/%s"%exp_name
-
 from time import time as ttime
 import shutil
 

@@ -5,7 +5,6 @@ if "_CUDA_VISIBLE_DEVICES" in os.environ:
     os.environ["CUDA_VISIBLE_DEVICES"] = os.environ["_CUDA_VISIBLE_DEVICES"]
 import argparse
 import logging
-import platform
 from pathlib import Path
 
 import torch
@@ -117,9 +116,7 @@ def main(args):
         devices=-1 if torch.cuda.is_available() else 1,
         benchmark=False,
         fast_dev_run=False,
-        strategy=DDPStrategy(process_group_backend="nccl" if platform.system() != "Windows" else "gloo")
-        if torch.cuda.is_available()
-        else "auto",
+        strategy=DDPStrategy(process_group_backend="nccl") if torch.cuda.is_available() else "auto",
         precision=config["train"]["precision"],
         logger=logger,
         num_sanity_val_steps=0,
@@ -157,15 +154,6 @@ if __name__ == "__main__":
         default="configs/s1longer.yaml",
         help="path of config file",
     )
-    # args for dataset
-    # parser.add_argument('--train_semantic_path',type=str,default='/data/docker/liujing04/gpt-vits/fine_tune_dataset/xuangou/6-name2semantic.tsv')
-    # parser.add_argument('--train_phoneme_path', type=str, default='/data/docker/liujing04/gpt-vits/fine_tune_dataset/xuangou/2-name2text.txt')
-
-    # parser.add_argument('--dev_semantic_path', type=str, default='dump_mix/semantic_dev.tsv')
-    # parser.add_argument('--dev_phoneme_path', type=str, default='dump_mix/phoneme_dev.npy')
-    # parser.add_argument('--output_dir',type=str,default='/data/docker/liujing04/gpt-vits/fine_tune_dataset/xuangou/logs_s1',help='directory to save the results')
-    # parser.add_argument('--output_dir',type=str,default='/liujing04/gpt_logs/s1/xuangou_ft',help='directory to save the results')
-
     args = parser.parse_args()
     logging.info(str(args))
     main(args)

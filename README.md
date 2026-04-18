@@ -49,7 +49,7 @@ bash install.sh --device MPS --source HF-Mirror
 If you install manually instead of running `install.sh`, run:
 
 ```bash
-pip install -r extra-req.txt --no-deps
+pip install -r requirements-extra.txt --no-deps
 pip install -r requirements.txt
 pip install -e .
 ```
