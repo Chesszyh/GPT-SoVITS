@@ -196,3 +196,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# train
+data/
+
+.firecrawl/
